@@ -1,4 +1,4 @@
-package com.erlang.server.service;
+package com.erlang.server.service.impl;
 
 import com.erlang.server.entity.domain.User;
 import com.erlang.server.mapper.UserMapper;
