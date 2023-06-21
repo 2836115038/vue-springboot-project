@@ -1,5 +1,6 @@
 package com.erlang.server.utils;
 
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.Cursor;
@@ -22,8 +23,7 @@ import java.util.concurrent.TimeUnit;
  *  @data 2021/1/14 15:55
  */
 @Component
-public class
-RedisCache {
+public class RedisCache {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;

@@ -1,18 +1,22 @@
 <template>
   <div style="text-align: center; margin: 0 20px">
     <div style="text-align: center; margin-top: 150px;">
-      <div style="font-size: 25px">登录</div>
+      <div style="font-size: 25px; font-weight: bold">登录</div>
       <div style="font-size: 14px; color: grey">在进入系统前请先登录</div>
     </div>
     <div style="margin-top: 50px;">
       <el-input v-model="form.username" type="text" placeholder="用户名/邮箱">
         <template #prefix>
-          <el-icon slot="prefix"><User/></el-icon>
+          <el-icon slot="prefix">
+            <User/>
+          </el-icon>
         </template>
       </el-input>
       <el-input v-model="form.password" type="password" placeholder="密码" style="margin-top: 10px;">
         <template #prefix>
-          <el-icon slot="prefix"><Lock/></el-icon>
+          <el-icon slot="prefix">
+            <Lock/>
+          </el-icon>
         </template>
       </el-input>
     </div>
@@ -31,7 +35,7 @@
       <span style="color: grey">没有账号</span>
     </el-divider>
     <div>
-      <el-button style="width: 270px;" type="warning" plain>注册</el-button>
+      <el-button @click="router.push('/register')" style="width: 270px;" type="warning" plain>注册</el-button>
     </div>
   </div>
 </template>
@@ -42,21 +46,21 @@ import {ElMessage} from "element-plus";
 import {post} from "@/utils";
 import router from "@/router";
 
-const  form  = reactive({
-  username:'',
-  password:'',
-  remember:false
+const form = reactive({
+  username: '',
+  password: '',
+  remember: false
 })
 
-const login = ()=>{
-  if (!form.username ||  !form.password){
+const login = () => {
+  if (!form.username || !form.password) {
     ElMessage.warning('用户名和密码不能为空!')
-  }else {
-    post('/api/auth/login',{
+  } else {
+    post('/api/auth/login', {
       username: form.username,
       password: form.password,
       remember: form.remember
-    },(message)=>{
+    }, (message) => {
       ElMessage.success(message)
       router.push('/index')
     })

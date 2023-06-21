@@ -2,9 +2,9 @@ package com.erlang.server.config;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.erlang.server.entity.Response;
-import com.erlang.server.service.impl.AuthorizeService;
+import com.erlang.server.service.AuthorizeService;
+import com.erlang.server.service.impl.AuthorizeServiceImpl;
 import com.erlang.server.utils.MyPersistentTokenRepository;
-import com.erlang.server.utils.RedisCache;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +18,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import javax.sql.DataSource;
 import java.io.IOException;
-import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
@@ -40,6 +37,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity,PersistentTokenRepository tokenRepository) throws Exception {
         return httpSecurity
                 .authorizeHttpRequests()
+                //放行验证相关请求
+                .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
@@ -50,7 +49,7 @@ public class SecurityConfiguration {
                 .rememberMe()
                 .rememberMeParameter("remember")
                 .tokenRepository(repository)
-                .userDetailsService(new AuthorizeService())
+                .userDetailsService(new AuthorizeServiceImpl())
                 .and()
                 .logout()
                 .logoutUrl("/api/auth/logout")
