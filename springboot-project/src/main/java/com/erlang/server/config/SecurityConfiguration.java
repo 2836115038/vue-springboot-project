@@ -3,6 +3,8 @@ package com.erlang.server.config;
 import com.alibaba.fastjson2.JSONObject;
 import com.erlang.server.entity.Response;
 import com.erlang.server.service.impl.AuthorizeService;
+import com.erlang.server.utils.MyPersistentTokenRepository;
+import com.erlang.server.utils.RedisCache;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
@@ -31,10 +34,8 @@ public class SecurityConfiguration {
 
     @Autowired
     private AuthorizeService authorizeService;
-
     @Autowired
-    private DataSource dataSource;
-
+    private MyPersistentTokenRepository repository;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity,PersistentTokenRepository tokenRepository) throws Exception {
         return httpSecurity
@@ -48,8 +49,8 @@ public class SecurityConfiguration {
                 .and()
                 .rememberMe()
                 .rememberMeParameter("remember")
-                .tokenRepository(tokenRepository)
-                .tokenValiditySeconds(3600 * 24 * 7)
+                .tokenRepository(repository)
+                .userDetailsService(new AuthorizeService())
                 .and()
                 .logout()
                 .logoutUrl("/api/auth/logout")
@@ -78,13 +79,6 @@ public class SecurityConfiguration {
         return configurationSource;
     }
 
-    @Bean
-    public PersistentTokenRepository tokenRepository(){
-        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
-        jdbcTokenRepository.setDataSource(dataSource);
-        jdbcTokenRepository.setCreateTableOnStartup(false);
-        return jdbcTokenRepository;
-    }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
@@ -106,6 +100,8 @@ public class SecurityConfiguration {
         if (request.getRequestURI().endsWith("/login")){
             response.getWriter().write(JSONObject.toJSONString(Response.success("登陆成功!")));
         }else if (request.getRequestURI().endsWith("/logout")){
+            //获取请求头中的数据
+
             response.getWriter().write(JSONObject.toJSONString(Response.success("退出登陆成功!")));
         }
 
