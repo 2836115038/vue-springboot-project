@@ -34,7 +34,7 @@ public class SecurityConfiguration {
     @Autowired
     private MyPersistentTokenRepository repository;
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity,PersistentTokenRepository tokenRepository) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .authorizeHttpRequests()
                 //放行验证相关请求
