@@ -1,5 +1,7 @@
 package com.erlang.server.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.erlang.server.entity.domain.User;
 import com.erlang.server.mapper.UserMapper;
 import com.erlang.server.service.AuthorizeService;
@@ -13,13 +15,15 @@ import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class AuthorizeServiceImpl implements AuthorizeService {
+public class AuthorizeServiceImpl  implements AuthorizeService {
 
     @Autowired
     private UserMapper userMapper;
@@ -27,6 +31,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     private MailSender mailSender;
     @Autowired
     private DB2RedisCache redisCache;
+
 
     @Value("${spring.mail.username}")
     String from;
@@ -50,7 +55,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     }
 
     @Override
-    public Boolean sendEmail(String email, String sessionId) {
+    public String sendEmail(String email, String sessionId) {
         /*
         1.生成对应的验证码
         2.将邮箱对应的验证码存放到redis(过期时间5分钟)
@@ -64,8 +69,12 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         if (Boolean.TRUE.equals(redisCache.hasKey(key))){
             Long expire = redisCache.getExpire(key, TimeUnit.SECONDS);
             if (expire >240){
-                return false;
+                return "请求频繁,请稍后再试!";
             }
+        }
+
+        if (userMapper.findUserByNameOrEmail(email)!=null){
+            return "此邮箱已被其他用户注册";
         }
         int code = new Random().nextInt(899999)+100000;
         SimpleMailMessage message = new SimpleMailMessage();
@@ -81,10 +90,43 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
             redisCache.set(key,String.valueOf(code));
             redisCache.expire(key,5L, TimeUnit.MINUTES);
-            return true;
+            return null;
         } catch (MailException e){
             e.printStackTrace();
-            return false;
+            return "邮件发送失败,请检查邮件地址是否有效!";
         }
     }
+
+    /**
+     * 校验用户信息完成注册
+     * @param username
+     * @param password
+     * @param email
+     * @param code
+     * @return
+     */
+    @Override
+    public String validateAndRegister(String username, String password, String email, String code,String sessionId) {
+        String key = "email:"+email+":"+sessionId;
+        if (Boolean.TRUE.equals(redisCache.hasKey(key))){
+            String s = redisCache.get(key).toString();
+            if (Objects.isNull(s)) return "验证码失效,请重新发送";
+            if (s.equals(code)){
+                //密码加密处理
+                String encodePassword = new BCryptPasswordEncoder().encode(password);
+                if (userMapper.creatAccount(username,encodePassword,email) > 0){
+                    return null;
+                }else {
+                    return "内部错误,请联系管理员!";
+                }
+            }else {
+                return "验证码错误,请重新输入";
+            }
+        }else {
+            return "请先发送验证码";
+        }
+
+    }
+
+
 }

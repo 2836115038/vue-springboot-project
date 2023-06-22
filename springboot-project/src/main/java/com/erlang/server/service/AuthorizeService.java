@@ -1,5 +1,6 @@
 package com.erlang.server.service;
 
+import com.erlang.server.entity.domain.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AuthorizeService extends UserDetailsService {
@@ -7,5 +8,7 @@ public interface AuthorizeService extends UserDetailsService {
     /*
     发送电子邮件
      */
-    Boolean sendEmail(String email, String sessionId);
+    String sendEmail(String email, String sessionId);
+
+    String validateAndRegister(String username,String password,String email,String code,String sessionId);
 }

@@ -16,6 +16,8 @@ const form = reactive({
 //初始设定获取验证码关闭
 const isEmail = ref(false)
 
+const coldTime = ref(0)
+
 const validateUsername = (rule,value,callback) => {
   if (value === ''){
     callback(new Error('请输入用户名'))
@@ -53,7 +55,7 @@ const rules = {
   password:[
     { required: true,message: '请输入密码', trigger: ['blur','change']},
     { validator: validatePassword,trigger:['blur','change']},
-    { min:6,max:16,message:'用户名长度为6-16个字符',trigger:['blur','change'] }
+    { min:6,max:16,message:'密码长度为6-16个字符',trigger:['blur','change'] }
   ],
   repeat_password:[
     { validator: validatePasswordIsSame,trigger:['blur','change'] }
@@ -78,7 +80,15 @@ const formRef = ref()
 const register = ()=> {
   formRef.value.validate((isValid)=>{
     if (isValid){
-
+        post("/api/auth/register",{
+          username: form.username,
+          password: form.password,
+          email: form.email,
+          code: form.code,
+        },(message)=>{
+          ElMessage.success(message)
+          router.push("/")
+        })
     }else {
       ElMessage.warning('请完整填写注册表单内容')
     }
@@ -90,6 +100,8 @@ const sendEmail = () =>{
     email: form.email
   },(message)=>{
     ElMessage.success(message)
+    coldTime.value = 60
+    setInterval(()=> coldTime.value--,1000)
   })
 }
 
@@ -141,11 +153,11 @@ const sendEmail = () =>{
         <el-form-item prop="code">
           <el-row :gutter="10" style="width: 100%">
             <el-col :span="17">
-              <el-input type="text" placeholder="请输入验证码" v-model="form.code">
+              <el-input type="text" placeholder="请输入验证码" v-model="form.code" :maxlength="6">
               </el-input>
             </el-col>
             <el-col :span="5">
-              <el-button type="primary" :disabled="!isEmail" @click="sendEmail">获取验证码</el-button>
+              <el-button type="primary" :disabled="!isEmail || coldTime>0" @click="sendEmail">{{ coldTime>0 ? '请稍后'+coldTime+'秒' : '获取验证码' }}</el-button>
             </el-col>
           </el-row>
         </el-form-item>
