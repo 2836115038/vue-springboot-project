@@ -1,7 +1,5 @@
 package com.erlang.server.utils;
 
-import com.erlang.server.entity.domain.User;
-import com.erlang.server.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.authentication.rememberme.PersistentRememberMeToken;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -74,7 +72,7 @@ public class MyPersistentTokenRepository implements PersistentTokenRepository {
         if (null == username || null == tokenValue || null == date) {
             return null;
         }
-        Long timestamp = Long.valueOf(date);
+        long timestamp = Long.parseLong(date);
         Date time = new Date(timestamp);
 
         return new PersistentRememberMeToken(username, series, tokenValue, time);

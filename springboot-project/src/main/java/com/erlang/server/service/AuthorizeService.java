@@ -1,6 +1,5 @@
 package com.erlang.server.service;
 
-import com.erlang.server.entity.domain.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AuthorizeService extends UserDetailsService {
