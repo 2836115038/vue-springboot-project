@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class MyPersistentTokenRepository implements PersistentTokenRepository {
 
     @Autowired
-    private RedisCache redisCache;
+    private DB1RedisCache redisCache;
 
     //令牌过期时间
     private final static long TOKEN_VALID_DAYS=14;

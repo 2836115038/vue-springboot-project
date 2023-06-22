@@ -11,7 +11,8 @@ spring:
       port: 6379
       host: 124.71.233.238
       password: 2836115038
-      database: 0
+      database1: 1
+      database2: 2
       jedis:
         pool:
           max-active: 8 # 连接池最大连接数（使用负值表示没有限制）
@@ -35,7 +36,6 @@ spring:
             enable: true
           socketFactory:
             class: javax.net.ssl.SSLSocketFactory
-
 
 
 

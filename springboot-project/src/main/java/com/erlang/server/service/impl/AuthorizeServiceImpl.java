@@ -3,9 +3,11 @@ package com.erlang.server.service.impl;
 import com.erlang.server.entity.domain.User;
 import com.erlang.server.mapper.UserMapper;
 import com.erlang.server.service.AuthorizeService;
-import com.erlang.server.utils.RedisCache;
+import com.erlang.server.utils.DB2RedisCache;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -24,7 +26,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     @Autowired
     private MailSender mailSender;
     @Autowired
-    private RedisCache redisCache;
+    private DB2RedisCache redisCache;
 
     @Value("${spring.mail.username}")
     String from;
@@ -58,7 +60,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         6.用户注册时,从redis取出对应键值对,然后看验证码是否一致
         */
 
-        String key = "email:"+sessionId+":"+email;
+        String key = "email:"+email+":"+sessionId;
         if (Boolean.TRUE.equals(redisCache.hasKey(key))){
             Long expire = redisCache.getExpire(key, TimeUnit.SECONDS);
             if (expire >240){
