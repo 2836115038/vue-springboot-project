@@ -75,6 +75,7 @@ const onValidate = (prop,isValid)=>{
     isEmail.value = isValid
   }
 }
+
 const formRef = ref()
 
 const register = ()=> {

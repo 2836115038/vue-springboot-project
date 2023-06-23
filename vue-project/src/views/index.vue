@@ -1,5 +1,5 @@
 <template>
-  <div>欢迎进入二郎的学习平台</div>
+  <div>欢迎进入学习平台</div>
   <div>
     <el-button @click="logout()" type="danger" plain>退出登陆</el-button>
   </div>
@@ -8,6 +8,8 @@
 import {get} from "@/utils";
 import {ElMessage} from "element-plus";
 import router from "@/router";
+
+
 
 const logout = ()=> {
   get('api/auth/logout',(message) => {

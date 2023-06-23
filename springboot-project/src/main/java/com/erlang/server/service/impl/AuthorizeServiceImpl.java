@@ -29,6 +29,8 @@ public class AuthorizeServiceImpl  implements AuthorizeService {
     private DB2RedisCache redisCache;
 
 
+
+
     @Value("${spring.mail.username}")
     String from;
 
@@ -51,7 +53,7 @@ public class AuthorizeServiceImpl  implements AuthorizeService {
     }
 
     @Override
-    public String sendEmail(String email, String sessionId) {
+    public String sendEmail(String email, String sessionId,Boolean hasUser) {
         /*
         1.生成对应的验证码
         2.将邮箱对应的验证码存放到redis(过期时间5分钟)
@@ -61,17 +63,16 @@ public class AuthorizeServiceImpl  implements AuthorizeService {
         6.用户注册时,从redis取出对应键值对,然后看验证码是否一致
         */
 
-        String key = "email:"+email+":"+sessionId;
+        String key = "email:"+email+":"+sessionId+":"+hasUser;
         if (Boolean.TRUE.equals(redisCache.hasKey(key))){
             Long expire = redisCache.getExpire(key, TimeUnit.SECONDS);
-            if (expire >240){
-                return "请求频繁,请稍后再试!";
-            }
+            if (expire >240) return "请求频繁,请稍后再试!";
         }
+        User account = userMapper.findUserByNameOrEmail(email);
+        if (hasUser && account == null) return "没有此邮件地址的账户";
+        if (!hasUser && account !=null) return "此邮箱已被其他用户注册!";
 
-        if (userMapper.findUserByNameOrEmail(email)!=null){
-            return "此邮箱已被其他用户注册";
-        }
+
         int code = new Random().nextInt(899999)+100000;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
@@ -103,13 +104,17 @@ public class AuthorizeServiceImpl  implements AuthorizeService {
      */
     @Override
     public String validateAndRegister(String username, String password, String email, String code,String sessionId) {
-        String key = "email:"+email+":"+sessionId;
+        String key = "email:"+email+":"+sessionId+":false";
         if (Boolean.TRUE.equals(redisCache.hasKey(key))){
             String s = redisCache.get(key).toString();
             if (Objects.isNull(s)) return "验证码失效,请重新发送";
             if (s.equals(code)){
+                User user = userMapper.findUserByNameOrEmail(username);
+                if (user !=null) return "此用户名已被注册!";
+                redisCache.delete(key);
                 //密码加密处理
-                String encodePassword = new BCryptPasswordEncoder().encode(password);
+                BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+                String encodePassword = passwordEncoder.encode(password);
                 if (userMapper.creatAccount(username,encodePassword,email) > 0){
                     return null;
                 }else {
@@ -121,8 +126,28 @@ public class AuthorizeServiceImpl  implements AuthorizeService {
         }else {
             return "请先发送验证码";
         }
-
     }
 
+    @Override
+    public String validateOnly(String email, String code, String sessionId) {
+        String key = "email:"+email+":"+sessionId+":true";
+        if (Boolean.TRUE.equals(redisCache.hasKey(key))){
+            String s = redisCache.get(key).toString();
+            if (Objects.isNull(s)) return "验证码失效,请重新发送";
+            if (s.equals(code)){
+                redisCache.delete(key);
+                return null;
+            }else {
+                return "验证码错误,请重新输入";
+            }
+        }else {
+            return "请先发送验证码";
+        }
+    }
 
+    @Override
+    public Boolean resetPassWord(String password, String email) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        return userMapper.resetPasswordByEmail(passwordEncoder.encode(password),email)>0;
+    }
 }
