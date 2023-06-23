@@ -45,6 +45,7 @@ import {reactive} from "vue";
 import {ElMessage} from "element-plus";
 import {get, post} from "@/utils";
 import router from "@/router";
+import {useStore} from "@/stores";
 
 const form = reactive({
   username: '',
@@ -52,7 +53,7 @@ const form = reactive({
   remember: false
 })
 
-
+const store = useStore()
 const login = () => {
   if (!form.username || !form.password) {
     ElMessage.warning('用户名和密码不能为空!')
@@ -63,7 +64,12 @@ const login = () => {
       remember: form.remember
     }, (message) => {
       ElMessage.success(message)
-      router.push('/index')
+      get('/api/user/me',(message)=>{
+        store.auth.user = message
+        router.push('/index')
+      },()=>{
+        store.auth.user = null
+      })
     })
   }
 }

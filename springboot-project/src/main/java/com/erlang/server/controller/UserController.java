@@ -19,7 +19,7 @@ public class UserController {
 
     @GetMapping("/me")
     public Response<UserVo> me(@SessionAttribute("account") UserVo user){
-        return Response.success(user);
+        return Response.success("success",user);
 
     }
 }
