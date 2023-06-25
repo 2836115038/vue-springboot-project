@@ -3,17 +3,14 @@ package com.erlang.server.config;
 import com.erlang.server.entity.domain.UserVo;
 import com.erlang.server.mapper.UserMapper;
 import com.erlang.server.utils.DB1RedisCache;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.cache.RedisCache;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 /**
  * @Description

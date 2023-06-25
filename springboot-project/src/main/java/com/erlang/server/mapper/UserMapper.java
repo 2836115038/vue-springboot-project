@@ -1,6 +1,5 @@
 package com.erlang.server.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.erlang.server.entity.domain.User;
 import com.erlang.server.entity.domain.UserVo;
 import org.apache.ibatis.annotations.Insert;
